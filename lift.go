@@ -9,12 +9,13 @@ import (
 )
 
 type Lift struct {
-	Id        int64
-	ProgramId int64
-	Type      string
-	Weight    float64
-	Sets      float64
-	Reps      float64
+	Id         int64
+	ProgramId  int64
+	LiftType   LiftType
+	LidtTypeId int64
+	Weight     float64
+	Sets       float64
+	Reps       float64
 }
 
 func registerLiftRoutes(router *mux.Router) {

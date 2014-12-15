@@ -23,7 +23,6 @@ func main() {
 	db.DB()
 
 	//configure the database
-	//db.AutoMigrate(Lot{})
 
 	port := flag.Int("port", 9081, "port to serve on")
 	dir := flag.String("directory", "web/", "directory of web files")
@@ -36,7 +35,10 @@ func main() {
 	// setup routes
 	router := mux.NewRouter()
 
-	//registerUserRoutes(router)
+	registerUserRoutes(router)
+	registerLiftTypeRoutes(router)
+	registerLiftRoutes(router)
+	registerProgramRoutes(router)
 
 	router.PathPrefix("/").Handler(fileHandler)
 	http.Handle("/", router)
