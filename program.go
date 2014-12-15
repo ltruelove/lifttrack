@@ -6,12 +6,16 @@ import (
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm"
 	"net/http"
+	"time"
 )
 
 type Program struct {
-	Id          int64
-	Programname string
-	Password    string
+	Id        int64
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	User      User
+	UserId    int64
+	Lifts     []Lift
 }
 
 func registerProgramRoutes(router *mux.Router) {
