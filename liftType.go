@@ -18,29 +18,50 @@ func registerLiftTypeRoutes(router *mux.Router) {
 	db.AutoMigrate(LiftType{})
 
 	/*** Create the initial lift types if they don't already exist ***/
-	squat := LiftType{Id: 0, Name: "Squat", Description: "Standard squat."}
-	if db.NewRecord(squat) {
-		db.Save(&squat)
+
+	lt := LiftType{}
+	db.Where("name = ?", "Squat").First(&lt)
+
+	if db.NewRecord(lt) {
+		lt.Name = "Squat"
+		lt.Description = "Standard squat."
+		db.Save(&lt)
 	}
 
-	bench := LiftType{Id: 0, Name: "Bench Press", Description: "Standard bench press."}
-	if db.NewRecord(bench) {
-		db.Save(&bench)
+	lt = LiftType{}
+	db.Where("name = ?", "Bench Press").First(&lt)
+
+	if db.NewRecord(lt) {
+		lt.Name = "Bench Press"
+		lt.Description = "Standard bench press."
+		db.Save(&lt)
 	}
 
-	deadlift := LiftType{Id: 0, Name: "Dead Lift", Description: "Standard dead lift."}
-	if db.NewRecord(deadlift) {
-		db.Save(&deadlift)
+	lt = LiftType{}
+	db.Where("name = ?", "Dead Lift").First(&lt)
+
+	if db.NewRecord(lt) {
+		lt.Name = "Dead Lift"
+		lt.Description = "Standard dead lift."
+		db.Save(&lt)
 	}
 
-	press := LiftType{Id: 0, Name: "Press", Description: "Standing press."}
-	if db.NewRecord(press) {
-		db.Save(&press)
+	lt = LiftType{}
+	db.Where("name = ?", "Press").First(&lt)
+
+	if db.NewRecord(lt) {
+		lt.Name = "Press"
+		lt.Description = "Standing press."
+		db.Save(&lt)
 	}
 
-	powerclean := LiftType{Id: 0, Name: "Power Clean", Description: "Standard power clean."}
-	if db.NewRecord(powerclean) {
-		db.Save(&powerclean)
+	lt = LiftType{}
+	db.Where("name = ?", "Power Clean").First(&lt)
+
+	if db.NewRecord(lt) {
+		lt.Name = "Power Clean"
+		lt.Description = "Standard power clean."
+		db.Save(&lt)
 	}
 
 	router.HandleFunc("/liftTypes", liftTypeList).Methods("GET")
