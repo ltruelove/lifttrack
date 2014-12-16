@@ -12,6 +12,14 @@ var app = Sammy('#main', function(){
     /***** END HOME ROUTES *****/
 
     /***** USER ROUTES *****/
+    this.get('#/userHome', function(context){
+        context.partial('/views/user/index.html', null, function(){
+            var container = document.getElementById('userHome')
+            ko.cleanNode(container);
+            ko.applyBindings(model,container);
+            model.getUserPrograms();
+        });
+    });
 
     this.get('#/users', function(context){
         context.partial('/views/users.html', null, function(){

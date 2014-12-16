@@ -1,0 +1,17 @@
+<div id="userHome">
+    <h2>Welcome <span data-bind="text: user.First" /></h2>
+    <a href="#/program/create">Create a new program</a>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Program Date</th>
+            </tr>
+        </thead>
+        <tbody data-bind="foreach: userPrograms">
+            <tr>
+                <td><a data-bind="attr: {href:'#/program/' + Id}, text: CreatedOn"></a></td>
+            </tr>
+        </tbody>
+    </table>
+</div>

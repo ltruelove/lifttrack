@@ -12,6 +12,8 @@ import (
 
 var db gorm.DB
 
+const PW_SALT string = "StuffAndThings"
+
 func main() {
 	var err error
 	db, err = gorm.Open("mysql", "lifttrack:123@/lifttrack?charset=utf8&parseTime=True")
