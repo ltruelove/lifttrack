@@ -46,6 +46,7 @@ func main() {
 	http.Handle("/", router)
 
 	addr := fmt.Sprintf(":%d", *port)
+	fmt.Printf("Listening on %d\r\n", *port)
 
 	// this call blocks -- the progam runs here forever
 	err = http.ListenAndServe(addr, nil)
