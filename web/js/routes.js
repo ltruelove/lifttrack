@@ -6,7 +6,7 @@ var app = Sammy('#main', function(){
     });
 
     this.get('#/', function () {
-        this.app.runRoute('get', '#/home')
+        this.app.runRoute('get', '#/userHome')
     });
 
     /***** END HOME ROUTES *****/
