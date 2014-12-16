@@ -13,7 +13,7 @@ type Program struct {
 	Id        int64
 	CreatedAt time.Time
 	UpdatedAt time.Time
-	User      User
+	User      User `json:"-"`
 	UserId    int64
 	Lifts     []Lift
 }
@@ -24,10 +24,18 @@ func registerProgramRoutes(router *mux.Router) {
 	router.HandleFunc("/programs", programList).Methods("GET")
 	router.HandleFunc("/program/{id}", programFetch).Methods("GET")
 	router.HandleFunc("/program/", programCreate).Methods("POST")
+	router.HandleFunc("/program/", programUpdate).Methods("PUT")
 	router.HandleFunc("/user/programs", listByUser).Methods("GET")
 }
 
 func programList(writer http.ResponseWriter, request *http.Request) {
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
 	programs := make([]Program, 0)
 	db.Find(&programs)
 
@@ -42,8 +50,32 @@ func programList(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programFetch(writer http.ResponseWriter, request *http.Request) {
+	accessToken, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
 	var program Program
 	vars := mux.Vars(request)
+
+	//pass a 0 in if you want a blank program record
+	if vars["id"] == "0" {
+		program.UserId = accessToken.UserId
+		program.Lifts = make([]Lift, 0)
+
+		blankProgram, err := json.Marshal(program)
+		if err != nil {
+			writer.WriteHeader(500)
+			writer.Write([]byte("Internal error"))
+			return
+		}
+
+		writer.WriteHeader(200)
+		writer.Write(blankProgram)
+		return
+	}
 
 	db.Find(&program, vars["id"])
 
@@ -67,10 +99,17 @@ func programFetch(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programCreate(writer http.ResponseWriter, request *http.Request) {
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
 	decoder := json.NewDecoder(request.Body)
 	var program Program
 
-	err := decoder.Decode(&program)
+	err = decoder.Decode(&program)
 	if err != nil {
 		writer.WriteHeader(400)
 		writer.Write([]byte("Could not decode the program"))
@@ -81,18 +120,56 @@ func programCreate(writer http.ResponseWriter, request *http.Request) {
 		writer.WriteHeader(400)
 		writer.Write([]byte("This program record already exists"))
 		return
-	} else {
-		db.Save(&program)
-		marshalled, err := json.Marshal(program)
-		if err != nil {
-			writer.WriteHeader(500)
-			writer.Write([]byte("Error saving the program"))
-			return
-		}
-		writer.WriteHeader(200)
-		writer.Write(marshalled)
+	}
+
+	db.Save(&program)
+	var marshalled []byte
+	marshalled, err = json.Marshal(program)
+	if err != nil {
+		writer.WriteHeader(500)
+		writer.Write([]byte("Error saving the program"))
 		return
 	}
+	writer.WriteHeader(200)
+	writer.Write(marshalled)
+	return
+}
+
+func programUpdate(writer http.ResponseWriter, request *http.Request) {
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+	decoder := json.NewDecoder(request.Body)
+	var program Program
+
+	err = decoder.Decode(&program)
+	if err != nil {
+		writer.WriteHeader(400)
+		writer.Write([]byte("Could not decode the program"))
+		return
+	}
+
+	if db.NewRecord(program) {
+		writer.WriteHeader(400)
+		writer.Write([]byte("This program does not exist"))
+		return
+	}
+
+	db.Save(&program)
+	var marshalled []byte
+	marshalled, err = json.Marshal(program)
+	if err != nil {
+		writer.WriteHeader(500)
+		writer.Write([]byte("Error saving the program"))
+		return
+	}
+	writer.WriteHeader(200)
+	writer.Write(marshalled)
+	return
 }
 
 func listByUser(writer http.ResponseWriter, request *http.Request) {

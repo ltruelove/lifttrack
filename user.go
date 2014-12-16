@@ -46,6 +46,13 @@ func registerUserRoutes(router *mux.Router) {
 }
 
 func userList(writer http.ResponseWriter, request *http.Request) {
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
 	users := make([]User, 0)
 	db.Find(&users)
 
@@ -60,6 +67,13 @@ func userList(writer http.ResponseWriter, request *http.Request) {
 }
 
 func userFetch(writer http.ResponseWriter, request *http.Request) {
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
 	var user User
 	vars := mux.Vars(request)
 
@@ -85,10 +99,17 @@ func userFetch(writer http.ResponseWriter, request *http.Request) {
 }
 
 func userCreate(writer http.ResponseWriter, request *http.Request) {
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
 	decoder := json.NewDecoder(request.Body)
 	var user User
 
-	err := decoder.Decode(&user)
+	err = decoder.Decode(&user)
 	if err != nil {
 		writer.WriteHeader(400)
 		writer.Write([]byte("Could not decode the user"))
@@ -101,7 +122,8 @@ func userCreate(writer http.ResponseWriter, request *http.Request) {
 		return
 	} else {
 		db.Save(&user)
-		marshalled, err := json.Marshal(user)
+		var marshalled []byte
+		marshalled, err = json.Marshal(user)
 		if err != nil {
 			writer.WriteHeader(500)
 			writer.Write([]byte("Error saving the user"))

@@ -5,6 +5,7 @@ var liftTrackViewModel = function(){
     self.loginUser = ko.mapping.fromJS({Username:"",Password:""});
     self.selectedProgram = ko.mapping.fromJS({});
     self.userPrograms = ko.mapping.fromJS([]);
+    self.liftTypes = ko.mapping.fromJS([]);
 
     self.login = function(){
         var loginUser = ko.mapping.toJS(self.loginUser);
@@ -41,6 +42,72 @@ var liftTrackViewModel = function(){
             }
     };
 
+    self.getProgram = function(id){
+        $.ajax({
+            url: '/program/' + id,
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function(request){
+                request.setRequestHeader("Token", self.token)
+            },
+            success: function(data, textStatus, request){
+                ko.mapping.fromJS(data, self.selectedProgram);
+            },
+            error: function(request, textStatus, errorThrown){
+                alert(errorThrown);
+            }
+    };
+
+    self.saveProgram = function(){
+        var program = ko.mapping.toJS(self.selectedProgram);
+        var type = (program.Id > 0)? 'PUT' : 'POST';
+        var dataString = JSON.stringify(program);
+
+        $.ajax({
+            url: '/program',
+            type: type,
+            data: dataString,
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function(request){
+                request.setRequestHeader("Token", self.token)
+            },
+            success: function(data, textStatus, request){
+                ko.mapping.fromJS(data, self.selectedProgram);
+                alert('Program Saved');
+            },
+            error: function(request, textStatus, errorThrown){
+                alert(errorThrown);
+            }
+        });
+
+    };
+
+    self.addLiftToProgram = function(){
+        $.ajax({
+            url: '/lift/0',
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function(request){
+                request.setRequestHeader("Token", self.token)
+            },
+            success: function(data, textStatus, request){
+                var program = ko.mapping.toJS(self.selectedProgram);
+                //a blank lift does not contain the program id so we have to set it here
+                data.ProgramId = program.Id;
+                program.Lifts.push(data);
+                ko.mapping.fromJS(program, self.selectedProgram);
+            },
+            error: function(request, textStatus, errorThrown){
+                alert(errorThrown);
+            }
+    };
+
+    self.getLiftTypes = function(){
+        $.get('/liftTypes',function(data){
+            ko.mapping.fromJS(data, self.liftTypes);
+        },'json');
+    }
     /*
     self.getInventoryItems = function(container){
         $.get('/inventory', function(data){
@@ -76,6 +143,7 @@ var liftTrackViewModel = function(){
 };
 
 var model = new liftTrackViewModel();
+model.getLiftTypes();
 
 $().ready(function(){
     app.run('#/');

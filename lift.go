@@ -42,8 +42,31 @@ func liftList(writer http.ResponseWriter, request *http.Request) {
 }
 
 func liftFetch(writer http.ResponseWriter, request *http.Request) {
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
 	var lift Lift
 	vars := mux.Vars(request)
+
+	//pass a 0 to get a blank record
+	// it's probably a good idea to add the ProgramId on the client side
+	if vars["id"] == "0" {
+		var encodedLift []byte
+		encodedLift, err = json.Marshal(lift)
+		if err != nil {
+			writer.WriteHeader(500)
+			writer.Write([]byte("Internal error"))
+			return
+		}
+
+		writer.WriteHeader(200)
+		writer.Write(encodedLift)
+		return
+	}
 
 	db.Find(&lift, vars["id"])
 
@@ -54,7 +77,8 @@ func liftFetch(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	// turn the response into JSON
-	bytes, err := json.Marshal(lift)
+	var bytes []byte
+	bytes, err = json.Marshal(lift)
 	if err != nil {
 		writer.WriteHeader(500)
 		writer.Write([]byte("Error encoding the lift"))
