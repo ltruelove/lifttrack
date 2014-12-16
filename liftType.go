@@ -18,27 +18,27 @@ func registerLiftTypeRoutes(router *mux.Router) {
 	db.AutoMigrate(LiftType{})
 
 	/*** Create the initial lift types if they don't already exist ***/
-	squat := LiftType{Id: 1, Name: "Squat", Description: "Standard squat."}
+	squat := LiftType{Id: 0, Name: "Squat", Description: "Standard squat."}
 	if db.NewRecord(squat) {
 		db.Save(&squat)
 	}
 
-	bench := LiftType{Id: 2, Name: "Bench Press", Description: "Standard bench press."}
+	bench := LiftType{Id: 0, Name: "Bench Press", Description: "Standard bench press."}
 	if db.NewRecord(bench) {
 		db.Save(&bench)
 	}
 
-	deadlift := LiftType{Id: 3, Name: "Dead Lift", Description: "Standard dead lift."}
+	deadlift := LiftType{Id: 0, Name: "Dead Lift", Description: "Standard dead lift."}
 	if db.NewRecord(deadlift) {
 		db.Save(&deadlift)
 	}
 
-	press := LiftType{Id: 4, Name: "Press", Description: "Standing press."}
+	press := LiftType{Id: 0, Name: "Press", Description: "Standing press."}
 	if db.NewRecord(press) {
 		db.Save(&press)
 	}
 
-	powerclean := LiftType{Id: 5, Name: "Power Clean", Description: "Standard power clean."}
+	powerclean := LiftType{Id: 0, Name: "Power Clean", Description: "Standard power clean."}
 	if db.NewRecord(powerclean) {
 		db.Save(&powerclean)
 	}
