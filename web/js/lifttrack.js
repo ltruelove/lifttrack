@@ -130,7 +130,7 @@ var liftTrackViewModel = function(){
     self.saveNewUser = function(){
         if($('#shippingAddress').val() != ""){
             //someone put their hand in the honey pot
-            location.hash('/home');
+            location.hash = '/home';
             return;
         }
 
@@ -152,7 +152,7 @@ var liftTrackViewModel = function(){
             success: function(data, textStatus, request){
                 ko.mapping.fromJS({}, self.newUser);
                 alert('User Saved');
-                location.hash('/home');
+                location.hash = '/home';
             },
             error: function(request, textStatus, errorThrown){
                 alert(errorThrown);
