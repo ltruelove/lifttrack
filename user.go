@@ -2,13 +2,13 @@ package main
 
 import (
 	"code.google.com/p/go-uuid/uuid"
-	"code.google.com/p/go.crypto/pbkdf2"
-	"crypto/sha256"
+	"crypto/sha1"
 	"encoding/json"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm"
+	"io"
 	"net/http"
 	"time"
 )
@@ -202,20 +202,12 @@ func userLogin(writer http.ResponseWriter, request *http.Request) {
 
 func (u *User) EncryptPassword() {
 	//add encryption routine here
-	salt := []byte(PW_SALT)
-	u.Password = string(HashPassword([]byte(u.Password), salt))
+	salted := fmt.Sprintf("%s%s", PW_SALT, u.Password)
+	hash := sha1.New()
+	io.WriteString(hash, salted)
+	u.Password = string(hash.Sum(nil))
+
 	fmt.Println(u.Password)
-}
-
-func HashPassword(password, salt []byte) []byte {
-	defer clear(password)
-	return pbkdf2.Key(password, salt, 4096, sha256.Size, sha256.New)
-}
-
-func clear(b []byte) {
-	for i := 0; i < len(b); i++ {
-		b[i] = 0
-	}
 }
 
 func getToken(userId int64) AccessToken {
