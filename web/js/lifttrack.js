@@ -149,9 +149,6 @@ var liftTrackViewModel = function(){
             data: dataString,
             contentType: 'application/json',
             dataType: 'json',
-            beforeSend: function(request){
-                request.setRequestHeader("Token", self.token)
-            },
             success: function(data, textStatus, request){
                 ko.mapping.fromJS({}, self.newUser);
                 alert('User Saved');

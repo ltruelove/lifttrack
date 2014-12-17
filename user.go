@@ -200,6 +200,7 @@ func (u *User) EncryptPassword() {
 	//add encryption routine here
 	salt := []byte(PW_SALT)
 	u.Password = string(HashPassword([]byte(u.Password), salt))
+	fmt.Println(u.Password)
 }
 
 func HashPassword(password, salt []byte) []byte {
