@@ -63,7 +63,7 @@ func programFetch(writer http.ResponseWriter, request *http.Request) {
 	//pass a 0 in if you want a blank program record
 	if vars["id"] == "0" {
 		program.UserId = accessToken.UserId
-		program.Lifts = make([]Lift, 0)
+		program.Lifts = make([]Lift, 1)
 
 		blankProgram, err := json.Marshal(program)
 		if err != nil {
