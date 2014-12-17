@@ -1,4 +1,5 @@
 <div id="programForm">
+
     <h2>Program created on <span data-bind:"text: CreatedOn" /> </h2>
     <form class="form" data-bind="submit: saveProgram">
         <table class="table table-striped">
@@ -15,7 +16,7 @@
                     <td><select data-bind="options: $root.liftTypes,
                             optionsText: 'Name',
                             value: LiftTypeId,
-                            optionsCaption: 'Choose...'"></select</td>
+                            optionsCaption: 'Choose...'"></select></td>
                     <td><input type="number" data-bind="value: selectedProgram.Weight" /></td>
                     <td><input type="number" data-bind="value: selectedProgram.Sets" /></td>
                     <td><input type="number" data-bind="value: selectedProgram.Reps" /></td>

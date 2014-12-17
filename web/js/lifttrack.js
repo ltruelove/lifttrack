@@ -5,7 +5,7 @@ var liftTrackViewModel = function(){
     self.loginUser = ko.mapping.fromJS({Username:"",Password:""});
     self.selectedProgram = ko.mapping.fromJS({});
     self.userPrograms = ko.mapping.fromJS([]);
-    self.liftTypes = ko.mapping.fromJS([]);
+    self.liftTypes = ko.observableArray([]);
     self.newUser = ko.mapping.fromJS({});
 
     self.login = function(){
@@ -109,7 +109,7 @@ var liftTrackViewModel = function(){
 
     self.getLiftTypes = function(){
         $.get('/liftTypes',function(data){
-            ko.mapping.fromJS(data, self.liftTypes);
+            self.liftTypes(data);
         },'json');
     };
 
