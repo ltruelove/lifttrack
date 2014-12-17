@@ -13,6 +13,10 @@ var app = Sammy('#main', function(){
         this.app.runRoute('get', '#/home')
     });
 
+    this.post('#:id', function() {
+        return false;
+    });
+
     /***** END HOME ROUTES *****/
 
     /***** USER ROUTES *****/
