@@ -2,7 +2,11 @@ var app = Sammy('#main', function(){
     /***** HOME ROUTES *****/
 
     this.get('#/home', function(context){
-        context.partial('/views/home.html');
+        context.partial('/views/home.html', null, function(){
+            var container = document.getElementById('homeForm')
+            ko.cleanNode(container);
+            ko.applyBindings(model,container);
+        });
     });
 
     this.get('#/', function () {
