@@ -67,6 +67,14 @@ var app = Sammy('#main', function(){
     /***** END USER ROUTES *****/
 
     /***** PROGRAM ROUTES *****/
+    this.get('#/program/create', function(context){
+        context.partial('/views/program/form.html',null, function(){
+            var container = document.getElementById('programForm')
+            ko.cleanNode(container);
+            model.getProgram('0');
+        });
+    });
+     
     this.get('#/program/:programId', function(context){
         var id = this.params['programId'];
         context.partial('/views/program/form.html',null, function(){
