@@ -141,10 +141,10 @@ var liftTrackViewModel = function(){
         }
 
         var user = ko.mapping.toJS(self.newUser);
-        var dataString = JSON.stringify(program);
+        var dataString = JSON.stringify(user);
 
         $.ajax({
-            url: '/program',
+            url: '/user',
             type: 'POST',
             data: dataString,
             contentType: 'application/json',
