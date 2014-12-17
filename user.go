@@ -169,10 +169,13 @@ func userLogin(writer http.ResponseWriter, request *http.Request) {
 	user.EncryptPassword()
 	var result User
 
-	db.Where("username = ? and password = ?", user.Username, user.Password).
-		First(&result)
+	db.Where("username = ?", user.Username).First(&result)
 
 	if result.Id == 0 {
+		writer.WriteHeader(401)
+		writer.Write([]byte("User name and password combination does not exist"))
+		return
+	} else if user.Password != result.Password {
 		writer.WriteHeader(401)
 		writer.Write([]byte("User name and password combination does not exist"))
 		return
