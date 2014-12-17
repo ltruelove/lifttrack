@@ -16,7 +16,7 @@ import (
 type User struct {
 	Id       int64
 	Username string `sql:"not null;unique"`
-	Password string `json:"-"`
+	Password string
 	First    string
 	Last     string
 }
@@ -100,6 +100,8 @@ func userFetch(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	//blank out the password
+	user.Password = ""
 	// turn the response into JSON
 	bytes, err := json.Marshal(user)
 	if err != nil {
@@ -143,6 +145,8 @@ func userCreate(writer http.ResponseWriter, request *http.Request) {
 
 		db.Save(&user)
 		var marshalled []byte
+		//blank out the password
+		user.Password = ""
 		marshalled, err = json.Marshal(user)
 		if err != nil {
 			writer.WriteHeader(500)
