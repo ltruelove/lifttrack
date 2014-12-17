@@ -40,7 +40,7 @@ func registerUserRoutes(router *mux.Router) {
 
 	router.HandleFunc("/users", userList).Methods("GET")
 	router.HandleFunc("/user/{id}", userFetch).Methods("GET")
-	router.HandleFunc("/user/", userCreate).Methods("POST")
+	router.HandleFunc("/user", userCreate).Methods("POST")
 	router.HandleFunc("/user/login", userLogin).Methods("POST")
 
 }
