@@ -146,7 +146,7 @@ func userCreate(writer http.ResponseWriter, request *http.Request) {
 		db.Save(&user)
 		var marshalled []byte
 		//blank out the password
-		user.Password = ""
+		//user.Password = ""
 		marshalled, err = json.Marshal(user)
 		if err != nil {
 			writer.WriteHeader(500)

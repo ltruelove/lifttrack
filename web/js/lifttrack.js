@@ -19,7 +19,7 @@ var liftTrackViewModel = function(){
             success: function(data, textStatus, request){
                 self.token = request.getResponseHeader("Token");
                 ko.mapping.fromJS(data, self.user);
-                location.hash="/userHome";
+                location.hash = "/userHome";
             },
             error: function(request, textStatus, errorThrown){
                 alert(errorThrown);
