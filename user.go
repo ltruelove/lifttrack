@@ -16,7 +16,7 @@ import (
 type User struct {
 	Id       int64
 	Username string
-	Password string
+	Password string `json:"-"`
 	First    string
 	Last     string
 }
@@ -76,6 +76,21 @@ func userFetch(writer http.ResponseWriter, request *http.Request) {
 
 	var user User
 	vars := mux.Vars(request)
+
+	//return a blank user
+	if vars["id"] == "0" {
+		var encodedUser []byte
+		encodedUser, err = json.Marshal(user)
+		if err != nil {
+			writer.WriteHeader(500)
+			writer.Write([]byte("Error encoding the user"))
+			return
+		}
+
+		writer.WriteHeader(200)
+		writer.Write(encodedUser)
+		return
+	}
 
 	db.Find(&user, vars["id"])
 

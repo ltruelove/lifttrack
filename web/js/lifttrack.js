@@ -6,6 +6,7 @@ var liftTrackViewModel = function(){
     self.selectedProgram = ko.mapping.fromJS({});
     self.userPrograms = ko.mapping.fromJS([]);
     self.liftTypes = ko.mapping.fromJS([]);
+    self.newUser = ko.mapping.fromJS({});
 
     self.login = function(){
         var loginUser = ko.mapping.toJS(self.loginUser);
@@ -40,6 +41,7 @@ var liftTrackViewModel = function(){
             error: function(request, textStatus, errorThrown){
                 alert(errorThrown);
             }
+        });
     };
 
     self.getProgram = function(id){
@@ -56,6 +58,7 @@ var liftTrackViewModel = function(){
             error: function(request, textStatus, errorThrown){
                 alert(errorThrown);
             }
+        });
     };
 
     self.saveProgram = function(){
@@ -101,44 +104,28 @@ var liftTrackViewModel = function(){
             error: function(request, textStatus, errorThrown){
                 alert(errorThrown);
             }
+        });
     };
 
     self.getLiftTypes = function(){
         $.get('/liftTypes',function(data){
             ko.mapping.fromJS(data, self.liftTypes);
         },'json');
-    }
-    /*
-    self.getInventoryItems = function(container){
-        $.get('/inventory', function(data){
-            self.inventoryItems(data);
-            ko.applyBindings(self,container);
-        },'json');
     };
 
-    self.saveAuction = function(){
-        var auction = ko.mapping.toJS(self.selectedAuction);
-        var type = (auction.Id > 0)? 'PUT':'POST';
-
+    self.getNewUser = function(){
         $.ajax({
-            url: '/auction',
-            contentType: 'application/json',
+            url: '/user/0',
+            type: 'GET',
             dataType: 'json',
-            type: type,
-            data: JSON.stringify(auction),
-            success: function(data) {
-                ko.mapping.fromJS(data, self.selectedAuction);
-                alert('Auction saved');
-                location.hash = "/inventory/auctions";
+            success: function(data, textStatus, request){
+                ko.mapping.fromJS(data, self.newUser);
             },
-            error: function(request, status, errorString) {
-                alert(errorString);
-            },
-            cache: false
-          }
-       );
+            error: function(request, textStatus, errorThrown){
+                alert(errorThrown);
+            }
+        });
     };
-    */
 
 };
 

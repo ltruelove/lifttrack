@@ -21,6 +21,15 @@ var app = Sammy('#main', function(){
         });
     });
 
+    this.get('#/user/new', function(context){
+        context.partial('/views/user/new.html', null, function(){
+            var container = document.getElementById('newUser')
+            ko.cleanNode(container);
+            ko.applyBindings(model,container);
+            model.getNewUser();
+        });
+    });
+
     this.get('#/users', function(context){
         context.partial('/views/users.html', null, function(){
             var container = document.getElementById('userList')
