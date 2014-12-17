@@ -127,6 +127,42 @@ var liftTrackViewModel = function(){
         });
     };
 
+    self.saveNewUser = function(){
+        if($('#shippingAddress').val() != ""){
+            //someone put their hand in the honey pot
+            location.hash('/home');
+            return;
+        }
+
+        //@todo: get some better validation working in here
+        if($('#passwordConfirm').val() != self.newUser.Password){
+            alert("Passwords don't match");
+            return;
+        }
+
+        var user = ko.mapping.toJS(self.newUser);
+        var dataString = JSON.stringify(program);
+
+        $.ajax({
+            url: '/program',
+            type: 'POST',
+            data: dataString,
+            contentType: 'application/json',
+            dataType: 'json',
+            beforeSend: function(request){
+                request.setRequestHeader("Token", self.token)
+            },
+            success: function(data, textStatus, request){
+                ko.mapping.fromJS({}, self.newUser);
+                alert('User Saved');
+                location.hash('/home');
+            },
+            error: function(request, textStatus, errorThrown){
+                alert(errorThrown);
+            }
+        });
+
+    };
 };
 
 var model = new liftTrackViewModel();

@@ -15,7 +15,7 @@ import (
 
 type User struct {
 	Id       int64
-	Username string
+	Username string `sql:"not null;unique"`
 	Password string `json:"-"`
 	First    string
 	Last     string
@@ -67,20 +67,12 @@ func userList(writer http.ResponseWriter, request *http.Request) {
 }
 
 func userFetch(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
-	if err != nil {
-		writer.WriteHeader(401)
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
 	var user User
 	vars := mux.Vars(request)
 
 	//return a blank user
 	if vars["id"] == "0" {
-		var encodedUser []byte
-		encodedUser, err = json.Marshal(user)
+		encodedUser, err := json.Marshal(user)
 		if err != nil {
 			writer.WriteHeader(500)
 			writer.Write([]byte("Error encoding the user"))
@@ -89,6 +81,14 @@ func userFetch(writer http.ResponseWriter, request *http.Request) {
 
 		writer.WriteHeader(200)
 		writer.Write(encodedUser)
+		return
+	}
+
+	//validate after we test for fetching a blank record
+	_, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
 		return
 	}
 
@@ -114,17 +114,10 @@ func userFetch(writer http.ResponseWriter, request *http.Request) {
 }
 
 func userCreate(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
-	if err != nil {
-		writer.WriteHeader(401)
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
 	decoder := json.NewDecoder(request.Body)
 	var user User
 
-	err = decoder.Decode(&user)
+	err := decoder.Decode(&user)
 	if err != nil {
 		writer.WriteHeader(400)
 		writer.Write([]byte("Could not decode the user"))
@@ -136,6 +129,18 @@ func userCreate(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte("This user record already exists"))
 		return
 	} else {
+
+		var existing User
+		db.Where("username = ?", user.Username).First(&existing)
+
+		if !db.NewRecord(existing) {
+			writer.WriteHeader(400)
+			writer.Write([]byte("Username already in use"))
+			return
+		}
+
+		user.EncryptPassword()
+
 		db.Save(&user)
 		var marshalled []byte
 		marshalled, err = json.Marshal(user)
