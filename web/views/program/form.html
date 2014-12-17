@@ -1,6 +1,5 @@
 <div id="programForm">
-    <h2>Program created on <span data-bind:"text: CreatedOn" /> </h2>
-    <form class="form" data-bind="submit: saveProgram">
+    <h2>Program created on <span data-bind:"text: selectedProgram.CreatedOn" /> </h2>
         <table class="table table-striped">
             <thead>
                 <tr>
@@ -14,15 +13,14 @@
                 <tr>
                     <td><select data-bind="options: $root.liftTypes,
                             optionsText: 'Name',
-                            value: LiftTypeId,
+                            value: $parent.LiftTypeId,
                             optionsCaption: 'Choose...'"></select></td>
-                    <td><input type="number" data-bind="value: selectedProgram.Weight" /></td>
-                    <td><input type="number" data-bind="value: selectedProgram.Sets" /></td>
-                    <td><input type="number" data-bind="value: selectedProgram.Reps" /></td>
+                    <td><input type="number" data-bind="value: Weight" /></td>
+                    <td><input type="number" data-bind="value: Sets" /></td>
+                    <td><input type="number" data-bind="value: Reps" /></td>
                 </tr>
             </tbody>
         </table>
-        <button class="button" data-bind="click: addLiftToProgram">+</button>
-        <input type="submit" />
-    </form>
+        <button class="button" data-bind="click: addLiftToProgram, clickBubble: false">+</button>
+        <button class="button" data-bind="click: saveProgram, clickBubble: false">Save</button>
 </div>

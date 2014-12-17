@@ -71,8 +71,7 @@ var app = Sammy('#main', function(){
         context.partial('/views/program/form.html',null, function(){
             var container = document.getElementById('programForm')
             ko.cleanNode(container);
-            ko.applyBindings(model,container);
-            model.getProgram('0');
+            model.getProgram('0',container);
         });
     });
      
@@ -81,7 +80,6 @@ var app = Sammy('#main', function(){
         context.partial('/views/program/form.html',null, function(){
             var container = document.getElementById('programForm')
             ko.cleanNode(container);
-            ko.applyBindings(model,container);
             model.getProgram(id,container);
         });
     });

@@ -19,6 +19,7 @@ var liftTrackViewModel = function(){
             success: function(data, textStatus, request){
                 self.token = request.getResponseHeader("Token");
                 ko.mapping.fromJS(data, self.user);
+                ko.mapping.fromJS({Username:"",Password:""}, self.loginUser);
                 location.hash = "/userHome";
             },
             error: function(request, textStatus, errorThrown){
@@ -44,7 +45,7 @@ var liftTrackViewModel = function(){
         });
     };
 
-    self.getProgram = function(id){
+    self.getProgram = function(id, container){
         $.ajax({
             url: '/program/' + id,
             type: 'GET',
@@ -54,6 +55,7 @@ var liftTrackViewModel = function(){
             },
             success: function(data, textStatus, request){
                 ko.mapping.fromJS(data, self.selectedProgram);
+                ko.applyBindings(self,container);
             },
             error: function(request, textStatus, errorThrown){
                 alert(errorThrown);
