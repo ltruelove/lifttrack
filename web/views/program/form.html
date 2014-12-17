@@ -1,5 +1,4 @@
 <div id="programForm">
-    <!-- ko using: selectedProgram -->
     <h2>Program created on <span data-bind:"text: CreatedOn" /> </h2>
     <form class="form" data-bind="submit: saveProgram">
         <table class="table table-striped">
@@ -11,20 +10,19 @@
                     <th>Reps</th>
                 </tr>
             </thead>
-            <tbody data-bind="foreach: Lifts">
+            <tbody data-bind="foreach: selectedProgram.Lifts">
                 <tr>
                     <td><select data-bind="options: $root.liftTypes,
                             optionsText: 'Name',
                             value: LiftTypeId,
                             optionsCaption: 'Choose...'"></select</td>
-                    <td><input type="number" data-bind="value: Weight" /></td>
-                    <td><input type="number" data-bind="value: Sets" /></td>
-                    <td><input type="number" data-bind="value: Reps" /></td>
+                    <td><input type="number" data-bind="value: selectedProgram.Weight" /></td>
+                    <td><input type="number" data-bind="value: selectedProgram.Sets" /></td>
+                    <td><input type="number" data-bind="value: selectedProgram.Reps" /></td>
                 </tr>
             </tbody>
         </table>
-        <button class="button" data-bind="click: addLiftToProgram, text: '+'"/>
+        <button class="button" data-bind="click: addLiftToProgram">+</button>
         <input type="submit" />
     </form>
-    <!-- /ko -->
 </div>
