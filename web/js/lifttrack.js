@@ -135,7 +135,7 @@ var liftTrackViewModel = function(){
         }
 
         //@todo: get some better validation working in here
-        if($('#passwordConfirm').val() != self.newUser.Password){
+        if($('#passwordConfirm').val() != self.newUser.Password()){
             alert("Passwords don't match");
             return;
         }
