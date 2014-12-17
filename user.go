@@ -169,8 +169,7 @@ func userLogin(writer http.ResponseWriter, request *http.Request) {
 	user.EncryptPassword()
 	var result User
 
-	db.Where("username = ?", user.Username).
-		Where("password = ?", user.Password).
+	db.Where("username = ? and password = ?", user.Username, user.Password).
 		First(&result)
 
 	if result.Id == 0 {
