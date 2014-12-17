@@ -8,7 +8,6 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm"
-	"io"
 	"net/http"
 	"time"
 )
@@ -202,10 +201,8 @@ func userLogin(writer http.ResponseWriter, request *http.Request) {
 
 func (u *User) EncryptPassword() {
 	//add encryption routine here
-	salted := fmt.Sprintf("%s%s", PW_SALT, u.Password)
-	hash := sha1.New()
-	io.WriteString(hash, salted)
-	u.Password = string(hash.Sum(nil))
+	salted := []byte(fmt.Sprintf("%s%s", PW_SALT, u.Password))
+	u.Password = fmt.Sprintf("%x", sha1.Sum(salted))
 
 	fmt.Println(u.Password)
 }
