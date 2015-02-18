@@ -1,53 +1,55 @@
-package main
+    package main
 
-import (
-	"code.google.com/p/go-uuid/uuid"
-	"crypto/sha1"
-	"encoding/json"
-	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
-	_ "github.com/jinzhu/gorm"
-	"net/http"
-	"time"
-)
+    import (
+        "code.google.com/p/go-uuid/uuid"
+        "crypto/sha1"
+        "encoding/json"
+        "fmt"
+        _ "github.com/go-sql-driver/mysql"
+        "github.com/gorilla/mux"
+        _ "github.com/jinzhu/gorm"
+        "net/http"
+        "time"
+    )
 
-type User struct {
-	Id       int64
-	Username string `sql:"not null;unique"`
-	Password string
-	First    string
-	Last     string
-}
+    type User struct {
+        Id       int64
+        Username string `sql:"not null;unique"`
+        Password string
+        First    string
+        Last     string
+        Programs []Program
+    }
 
-type DisplayUser struct {
-	Username string
-	First    string
-	Last     string
-}
+    type DisplayUser struct {
+        Username string
+        First    string
+        Last     string
+    }
 
-type AccessToken struct {
-	Token        string
-	UserId       int64
-	LastAccessed time.Time
-	User         User
-}
+    type AccessToken struct {
+        Token        string
+        UserId       int64
+        LastAccessed time.Time
+        User         User
+    }
 
-func registerUserRoutes(router *mux.Router) {
-	db.AutoMigrate(User{})
-	db.AutoMigrate(AccessToken{})
+    func registerUserRoutes(router *mux.Router) {
+        db.AutoMigrate(&User{})
+        db.AutoMigrate(&AccessToken{})
 
-	router.HandleFunc("/users", userList).Methods("GET")
-	router.HandleFunc("/user/{id}", userFetch).Methods("GET")
-	router.HandleFunc("/user", userCreate).Methods("POST")
-	router.HandleFunc("/user/login", userLogin).Methods("POST")
+        router.HandleFunc("/users", userList).Methods("GET")
+        router.HandleFunc("/user/programs", userPrograms).Methods("GET")
+        router.HandleFunc("/user/{id}", userFetch).Methods("GET")
+        router.HandleFunc("/user", userCreate).Methods("POST")
+        router.HandleFunc("/user/login", userLogin).Methods("POST")
 
-}
+    }
 
-func userList(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
-	if err != nil {
-		writer.WriteHeader(401)
+    func userList(writer http.ResponseWriter, request *http.Request) {
+        _, err := validateToken(request)
+        if err != nil {
+            writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -63,6 +65,37 @@ func userList(writer http.ResponseWriter, request *http.Request) {
 
 	writer.WriteHeader(200)
 	writer.Write(marshalled)
+}
+
+func userPrograms(writer http.ResponseWriter, request *http.Request) {
+	token, err := validateToken(request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+    var user User
+	db.Preload("Programs").Find(&user, token.UserId)
+
+	if &user == nil {
+		writer.WriteHeader(404)
+		writer.Write([]byte("User record not found."))
+		return
+	}
+
+	// turn the response into JSON
+	var bytes []byte
+	bytes, err = json.Marshal(user.Programs)
+	if err != nil {
+		writer.WriteHeader(500)
+		writer.Write([]byte("Error encoding the programs"))
+		return
+	}
+
+	writer.WriteHeader(200)
+	writer.Write(bytes)
+	return
 }
 
 func userFetch(writer http.ResponseWriter, request *http.Request) {

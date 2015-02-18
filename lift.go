@@ -12,14 +12,14 @@ type Lift struct {
 	Id         int64
 	ProgramId  int64
 	LiftType   LiftType
-	LidtTypeId int64
-	Weight     float64
-	Sets       float64
-	Reps       float64
+	LiftTypeId int64
+	Weight     float64 `json:",string"`
+	Sets       float64 `json:",string"`
+	Reps       float64 `json:",string"`
 }
 
 func registerLiftRoutes(router *mux.Router) {
-	db.AutoMigrate(Lift{})
+	db.AutoMigrate(&Lift{})
 
 	router.HandleFunc("/lifts", liftList).Methods("GET")
 	router.HandleFunc("/lift/{id}", liftFetch).Methods("GET")
