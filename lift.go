@@ -42,7 +42,7 @@ func liftList(writer http.ResponseWriter, request *http.Request) {
 }
 
 func liftFetch(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))

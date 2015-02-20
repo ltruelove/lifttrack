@@ -29,7 +29,7 @@ func registerProgramRoutes(router *mux.Router) {
 }
 
 func programList(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -50,7 +50,7 @@ func programList(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programFetch(writer http.ResponseWriter, request *http.Request) {
-	accessToken, err := validateToken(request)
+	accessToken, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -99,7 +99,7 @@ func programFetch(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programCreate(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -136,7 +136,7 @@ func programCreate(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programUpdate(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
