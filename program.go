@@ -8,6 +8,7 @@ import (
 	_ "github.com/jinzhu/gorm"
 	"net/http"
 	"time"
+    "fmt"
 )
 
 type Program struct {
@@ -20,7 +21,7 @@ type Program struct {
 }
 
 func registerProgramRoutes(router *mux.Router) {
-	db.AutoMigrate(Program{})
+	db.AutoMigrate(&Program{})
 
 	router.HandleFunc("/programs", programList).Methods("GET")
 	router.HandleFunc("/program/{id}", programFetch).Methods("GET")
@@ -30,7 +31,7 @@ func registerProgramRoutes(router *mux.Router) {
 }
 
 func programList(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -51,7 +52,7 @@ func programList(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programFetch(writer http.ResponseWriter, request *http.Request) {
-	accessToken, err := validateToken(request)
+	accessToken, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -78,7 +79,7 @@ func programFetch(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
-	db.Find(&program, vars["id"])
+	db.Preload("LiftType").Preload("Lifts").Find(&program, vars["id"])
 
 	if &program == nil {
 		writer.WriteHeader(404)
@@ -100,7 +101,7 @@ func programFetch(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programCreate(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -113,7 +114,7 @@ func programCreate(writer http.ResponseWriter, request *http.Request) {
 	err = decoder.Decode(&program)
 	if err != nil {
 		writer.WriteHeader(400)
-		writer.Write([]byte(fmt.Sprintf("%s: %s", "Could not decode the program", err)))
+		writer.Write([]byte(fmt.Sprintf("%s: %s","Could not decode the program",err)))
 		return
 	}
 
@@ -137,7 +138,7 @@ func programCreate(writer http.ResponseWriter, request *http.Request) {
 }
 
 func programUpdate(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -171,26 +172,4 @@ func programUpdate(writer http.ResponseWriter, request *http.Request) {
 	writer.WriteHeader(200)
 	writer.Write(marshalled)
 	return
-}
-
-func listByUser(writer http.ResponseWriter, request *http.Request) {
-	accessToken, err := validateToken(request)
-	if err != nil {
-		writer.WriteHeader(401)
-		writer.Write([]byte(err.Error()))
-		return
-	}
-
-	programs := make([]Program, 0)
-	db.Order("created_on desc").Where("user_id = ?", accessToken.UserId).Find(&programs)
-
-	encodedPrograms, err := json.Marshal(programs)
-	if err != nil {
-		writer.WriteHeader(500)
-		writer.Write([]byte("Internal error"))
-		return
-	}
-
-	writer.WriteHeader(200)
-	writer.Write(encodedPrograms)
 }

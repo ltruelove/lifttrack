@@ -15,7 +15,7 @@ type LiftType struct {
 }
 
 func registerLiftTypeRoutes(router *mux.Router) {
-	db.AutoMigrate(LiftType{})
+	db.AutoMigrate(&LiftType{})
 
 	/*** Create the initial lift types if they don't already exist ***/
 

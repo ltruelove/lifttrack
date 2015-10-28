@@ -1,53 +1,60 @@
-package main
+    package main
 
-import (
-	"code.google.com/p/go-uuid/uuid"
-	"crypto/sha1"
-	"encoding/json"
-	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
-	_ "github.com/jinzhu/gorm"
-	"net/http"
-	"time"
-)
+    import (
+        "encoding/gob"
+        "code.google.com/p/go-uuid/uuid"
+        "crypto/sha1"
+        "encoding/json"
+        "fmt"
+        _ "github.com/go-sql-driver/mysql"
+        "github.com/gorilla/mux"
+        "github.com/gorilla/sessions"
+        _ "github.com/jinzhu/gorm"
+        "net/http"
+        "time"
+    )
 
-type User struct {
-	Id       int64
-	Username string `sql:"not null;unique"`
-	Password string
-	First    string
-	Last     string
-}
+    type User struct {
+        Id       int64
+        Username string `sql:"not null;unique"`
+        Password string
+        First    string
+        Last     string
+        Programs []Program
+    }
 
-type DisplayUser struct {
-	Username string
-	First    string
-	Last     string
-}
+    type DisplayUser struct {
+        Username string
+        First    string
+        Last     string
+    }
 
-type AccessToken struct {
-	Token        string
-	UserId       int64
-	LastAccessed time.Time
-	User         User
-}
+    type AccessToken struct {
+        Token        string
+        UserId       int64
+        LastAccessed time.Time
+        User         User
+    }
 
-func registerUserRoutes(router *mux.Router) {
-	db.AutoMigrate(User{})
-	db.AutoMigrate(AccessToken{})
+    var store = sessions.NewCookieStore([]byte("should-be-a-config"))
 
-	router.HandleFunc("/users", userList).Methods("GET")
-	router.HandleFunc("/user/{id}", userFetch).Methods("GET")
-	router.HandleFunc("/user", userCreate).Methods("POST")
-	router.HandleFunc("/user/login", userLogin).Methods("POST")
+    func registerUserRoutes(router *mux.Router) {
+        db.AutoMigrate(&User{})
+        db.AutoMigrate(&AccessToken{})
+        gob.Register(AccessToken{})
 
-}
+        router.HandleFunc("/users", userList).Methods("GET")
+        router.HandleFunc("/user/programs", userPrograms).Methods("GET")
+        router.HandleFunc("/user/{id}", userFetch).Methods("GET")
+        router.HandleFunc("/user", userCreate).Methods("POST")
+        router.HandleFunc("/user/login", userLogin).Methods("POST")
 
-func userList(writer http.ResponseWriter, request *http.Request) {
-	_, err := validateToken(request)
-	if err != nil {
-		writer.WriteHeader(401)
+    }
+
+    func userList(writer http.ResponseWriter, request *http.Request) {
+        _, err := validateToken(writer, request)
+        if err != nil {
+            writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
 		return
 	}
@@ -63,6 +70,37 @@ func userList(writer http.ResponseWriter, request *http.Request) {
 
 	writer.WriteHeader(200)
 	writer.Write(marshalled)
+}
+
+func userPrograms(writer http.ResponseWriter, request *http.Request) {
+	token, err := validateToken(writer, request)
+	if err != nil {
+		writer.WriteHeader(401)
+		writer.Write([]byte(err.Error()))
+		return
+	}
+
+    var user User
+	db.Preload("Programs").Find(&user, token.UserId)
+
+	if &user == nil {
+		writer.WriteHeader(404)
+		writer.Write([]byte("User record not found."))
+		return
+	}
+
+	// turn the response into JSON
+	var bytes []byte
+	bytes, err = json.Marshal(user.Programs)
+	if err != nil {
+		writer.WriteHeader(500)
+		writer.Write([]byte("Error encoding the programs"))
+		return
+	}
+
+	writer.WriteHeader(200)
+	writer.Write(bytes)
+	return
 }
 
 func userFetch(writer http.ResponseWriter, request *http.Request) {
@@ -84,7 +122,7 @@ func userFetch(writer http.ResponseWriter, request *http.Request) {
 	}
 
 	//validate after we test for fetching a blank record
-	_, err := validateToken(request)
+	_, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
 		writer.Write([]byte(err.Error()))
@@ -192,8 +230,15 @@ func userLogin(writer http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+
 	accessToken := getToken(result.Id)
 	writer.Header().Set("Token", accessToken.Token)
+
+    session, _ := store.Get(request, "lifttrack-userToken")
+    session.Values["token"] = accessToken
+    fmt.Println(session.Values["token"])
+    session.Save(request, writer)
+
 	writer.WriteHeader(200)
 	writer.Write(encodedUser)
 
@@ -219,28 +264,40 @@ func getToken(userId int64) AccessToken {
 	return accessToken
 }
 
-func validateToken(req *http.Request) (*AccessToken, error) {
+func validateToken(writer http.ResponseWriter, req *http.Request) (*AccessToken, error) {
 	var accessToken AccessToken
-	tokenText := req.Header.Get("Token")
+    testToken := AccessToken{}
+    var tokenText = ""
+    session, _ := store.Get(req, "lifttrack-userToken")
 
-	db.Where("token = ?", tokenText).First(&accessToken)
+    testToken,_ = session.Values["token"].(AccessToken)
+    if testToken.Token == ""  {
+        tokenText = req.Header.Get("Token")
+        testToken.Token = tokenText
+    }
+    fmt.Println(testToken.Token)
 
-	if accessToken.Token == "" {
-		return nil, fmt.Errorf("Token not found")
-	}
+    db.Where("token = ?", testToken.Token).First(&accessToken)
 
-	current := time.Now()
-	if accessToken.LastAccessed.Before(current) {
-		dif := current.Sub(accessToken.LastAccessed).Minutes()
-		if dif > 15 {
-			return nil, fmt.Errorf("Token has expired")
-		} else {
-			accessToken.LastAccessed = time.Now()
-			db.Save(&accessToken)
-		}
-	} else {
-		return nil, fmt.Errorf("Token has expired")
-	}
+    if accessToken.Token == "" {
+        return nil, fmt.Errorf("Token not found")
+    }
+    
+    current := time.Now()
+    if accessToken.LastAccessed.Before(current) {
+        dif := current.Sub(accessToken.LastAccessed).Minutes()
+        if dif > 15 {
+            return nil, fmt.Errorf("Token has expired")
+        } else {
+            accessToken.LastAccessed = time.Now()
+            db.Save(&accessToken)
+        }
+    } else {
+        return nil, fmt.Errorf("Token has expired")
+    }
+
+    session.Values["token"] = tokenText
+    session.Save(req, writer)
 
 	return &accessToken, nil
 }
