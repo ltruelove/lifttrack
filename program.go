@@ -8,7 +8,6 @@ import (
 	_ "github.com/jinzhu/gorm"
 	"net/http"
 	"time"
-    "fmt"
 )
 
 type Program struct {
@@ -27,7 +26,7 @@ func registerProgramRoutes(router *mux.Router) {
 	router.HandleFunc("/program/{id}", programFetch).Methods("GET")
 	router.HandleFunc("/program", programCreate).Methods("POST")
 	router.HandleFunc("/program", programUpdate).Methods("PUT")
-	router.HandleFunc("/user/programs", listByUser).Methods("GET")
+	//router.HandleFunc("/user/programs", listByUser).Methods("GET")
 }
 
 func programList(writer http.ResponseWriter, request *http.Request) {
@@ -114,7 +113,7 @@ func programCreate(writer http.ResponseWriter, request *http.Request) {
 	err = decoder.Decode(&program)
 	if err != nil {
 		writer.WriteHeader(400)
-		writer.Write([]byte(fmt.Sprintf("%s: %s","Could not decode the program",err)))
+		writer.Write([]byte(fmt.Sprintf("%s: %s", "Could not decode the program", err)))
 		return
 	}
 
