@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm"
@@ -23,8 +24,8 @@ func registerProgramRoutes(router *mux.Router) {
 
 	router.HandleFunc("/programs", programList).Methods("GET")
 	router.HandleFunc("/program/{id}", programFetch).Methods("GET")
-	router.HandleFunc("/program/", programCreate).Methods("POST")
-	router.HandleFunc("/program/", programUpdate).Methods("PUT")
+	router.HandleFunc("/program", programCreate).Methods("POST")
+	router.HandleFunc("/program", programUpdate).Methods("PUT")
 	router.HandleFunc("/user/programs", listByUser).Methods("GET")
 }
 
@@ -112,7 +113,7 @@ func programCreate(writer http.ResponseWriter, request *http.Request) {
 	err = decoder.Decode(&program)
 	if err != nil {
 		writer.WriteHeader(400)
-		writer.Write([]byte("Could not decode the program"))
+		writer.Write([]byte(fmt.Sprintf("%s: %s", "Could not decode the program", err)))
 		return
 	}
 
