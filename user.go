@@ -41,7 +41,7 @@
     func registerUserRoutes(router *mux.Router) {
         db.AutoMigrate(&User{})
         db.AutoMigrate(&AccessToken{})
-        gob.Register(AccessToken{})
+        gob.Register(&AccessToken{})
 
         router.HandleFunc("/users", userList).Methods("GET")
         router.HandleFunc("/user/programs", userPrograms).Methods("GET")
@@ -73,6 +73,7 @@
 }
 
 func userPrograms(writer http.ResponseWriter, request *http.Request) {
+
 	token, err := validateToken(writer, request)
 	if err != nil {
 		writer.WriteHeader(401)
@@ -236,7 +237,6 @@ func userLogin(writer http.ResponseWriter, request *http.Request) {
 
     session, _ := store.Get(request, "lifttrack-userToken")
     session.Values["token"] = accessToken
-    fmt.Println(session.Values["token"])
     session.Save(request, writer)
 
 	writer.WriteHeader(200)
@@ -253,7 +253,12 @@ func (u *User) EncryptPassword() {
 }
 
 func getToken(userId int64) AccessToken {
-	accessToken := AccessToken{"", userId, time.Now(), User{}}
+    loc, err := time.LoadLocation("UTC")
+    if err != nil {
+        fmt.Println("err: ", err.Error())
+    }
+
+	accessToken := AccessToken{"", userId, time.Now().In(loc), User{}}
 	accessToken.Token = uuid.New()
 
 	//remove other tokens for this user if they exist
@@ -266,30 +271,36 @@ func getToken(userId int64) AccessToken {
 
 func validateToken(writer http.ResponseWriter, req *http.Request) (*AccessToken, error) {
 	var accessToken AccessToken
-    testToken := AccessToken{}
     var tokenText = ""
     session, _ := store.Get(req, "lifttrack-userToken")
 
-    testToken,_ = session.Values["token"].(AccessToken)
-    if testToken.Token == ""  {
-        tokenText = req.Header.Get("Token")
-        testToken.Token = tokenText
-    }
-    fmt.Println(testToken.Token)
+    // Retrieve our struct and type-assert it
+    val := session.Values["token"]
+    var userToken = &AccessToken{}
 
-    db.Where("token = ?", testToken.Token).First(&accessToken)
+    userToken, _ = val.(*AccessToken)
+    fmt.Print("Token given: ")
+    fmt.Println(userToken.Token)
+
+    db.Where("token = ?", userToken.Token).First(&accessToken)
 
     if accessToken.Token == "" {
         return nil, fmt.Errorf("Token not found")
     }
-    
-    current := time.Now()
-    if accessToken.LastAccessed.Before(current) {
-        dif := current.Sub(accessToken.LastAccessed).Minutes()
+
+    if accessToken.LastAccessed.Before(time.Now()) {
+        dif := time.Since(accessToken.LastAccessed).Minutes()
+        fmt.Print("minutes difference ")
+        fmt.Println(dif)
         if dif > 15 {
             return nil, fmt.Errorf("Token has expired")
         } else {
-            accessToken.LastAccessed = time.Now()
+            loc, err := time.LoadLocation("UTC")
+            if err != nil {
+                fmt.Println("err: ", err.Error())
+            }
+            
+            accessToken.LastAccessed = time.Now().In(loc)
             db.Save(&accessToken)
         }
     } else {
